@@ -1,3 +1,4 @@
 build/
 sdkconfig
 sdkconfig.old
+mqtt_eclipseprojects_io.pem
