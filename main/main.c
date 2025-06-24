@@ -1,13 +1,6 @@
-/* MQTT over SSL Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
 #include <stdio.h>
+#include "dht.h"
+#include "unistd.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -26,6 +19,8 @@
 
 static const char *TAG = "mqtts_example";
 #define MQTTS_SERVER_URL "mqtt://broker.hivemq.com" // Replace with your MQTT broker URL;
+#define TEMPERATURE_TOPIC "/topic/temperature"
+#define HUMIDITY_TOPIC "/topic/humidity"
 
 #if CONFIG_BROKER_CERTIFICATE_OVERRIDDEN == 1
 static const uint8_t mqtt_eclipseprojects_io_pem_start[] = "-----BEGIN CERTIFICATE-----\n" CONFIG_BROKER_CERTIFICATE_OVERRIDE "\n-----END CERTIFICATE-----";
@@ -33,6 +28,9 @@ static const uint8_t mqtt_eclipseprojects_io_pem_start[] = "-----BEGIN CERTIFICA
 extern const uint8_t mqtt_eclipseprojects_io_pem_start[] asm("_binary_mqtt_eclipseprojects_io_pem_start");
 #endif
 extern const uint8_t mqtt_eclipseprojects_io_pem_end[] asm("_binary_mqtt_eclipseprojects_io_pem_end");
+
+#define PIN_DHT22 4
+#define FORMAT_DATA "humidity: %.2f %%\ntemperature: %.2f C\n"
 
 //
 // Note: this function is for testing purposes only publishing part of the active partition
@@ -74,6 +72,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
         msg_id = esp_mqtt_client_subscribe(client, "/topic/qos1", 1);
+        ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+
+        msg_id = esp_mqtt_client_subscribe(client, TEMPERATURE_TOPIC, 1);
+        ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
+
+        msg_id = esp_mqtt_client_subscribe(client, HUMIDITY_TOPIC, 1);
         ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
         msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
@@ -128,6 +132,9 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
+// Make client a global variable
+esp_mqtt_client_handle_t client = NULL;
+
 static void mqtt_app_start(void)
 {
     const esp_mqtt_client_config_t mqtt_cfg = {
@@ -139,7 +146,7 @@ static void mqtt_app_start(void)
     };
 
     ESP_LOGI(TAG, "[APP] Free memory: %" PRIu32 " bytes", esp_get_free_heap_size());
-    esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
+    client = esp_mqtt_client_init(&mqtt_cfg);
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(client);
@@ -147,6 +154,7 @@ static void mqtt_app_start(void)
 
 void app_main(void)
 {
+
     ESP_LOGI(TAG, "[APP] Startup..");
     ESP_LOGI(TAG, "[APP] Free memory: %" PRIu32 " bytes", esp_get_free_heap_size());
     ESP_LOGI(TAG, "[APP] IDF version: %s", esp_get_idf_version());
@@ -169,5 +177,31 @@ void app_main(void)
      */
     ESP_ERROR_CHECK(example_connect());
 
+    float humidity = 0.0f;
+    float temperature = 0.0f;
+    dht_read_float_data(DHT_TYPE_DHT22, PIN_DHT22, &humidity, &temperature);
+
+    esp_err_t err = ESP_FAIL;
+
     mqtt_app_start();
+    while (1)
+    {
+
+        err = dht_read_float_data(DHT_TYPE_DHT22, PIN_DHT22, &humidity, &temperature);
+        if (err != ESP_OK)
+        {
+            printf("Failed to read data from DHT sensor: %s\n", esp_err_to_name(err));
+        }
+        else
+        {
+            printf(FORMAT_DATA, humidity, temperature);
+            char humidity_str[16];
+            char temperature_str[16];
+            snprintf(temperature_str, sizeof(temperature_str), "%.2f", temperature);
+            snprintf(humidity_str, sizeof(humidity_str), "%.2f", humidity);
+            esp_mqtt_client_publish(client, TEMPERATURE_TOPIC, temperature_str, 0, 0, 0);
+            esp_mqtt_client_publish(client, HUMIDITY_TOPIC, humidity_str, 0, 0, 0);
+            sleep(5); // Sleep for 2 seconds before the next read
+        }
+    }
 }

@@ -9,8 +9,16 @@ dependencies:
       path: C:\Users\panta\esp\esp-idf\examples\common_components\protocol_examples_common
       type: local
     version: '*'
+  zorxx/dht:
+    component_hash: 6a5e699b15509d99b90352694e23beb6646855486eb3bafefd1d50058d474e98
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.1
 direct_dependencies:
 - protocol_examples_common
-manifest_hash: 9a9520c926aa0a3e6ab6efa4fb14c3591e654d3887543776c1f730f359b02661
+- zorxx/dht
+manifest_hash: dfdfe09ff29e6f53ed27e16a46cf51b53388f9675a06ecb8f9bc4a6c1a241be4
 target: esp32
 version: 2.0.0
