@@ -2,3 +2,5 @@ dependencies:
   protocol_examples_common:
     path: ${IDF_PATH}/examples/common_components/protocol_examples_common
   zorxx/dht: ^1.0.1
+  tny-robotics/sh1106-esp-idf: ^1.0.0
+  lvgl/lvgl: ^9.3.0
