@@ -1,32 +1,45 @@
-# _Sample project_
+# Proyecto: MQTT Sensors con ESP-IDF
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+Este proyecto es un ejemplo de aplicación IoT usando el framework **ESP-IDF** de Espressif. El sistema lee datos de un sensor de temperatura y humedad **DHT22**, los muestra en una pantalla OLED **SH1106** y los publica a un broker usando el protocolo **MQTT** con **certificados TLS** para comunicación segura.
 
-This is the simplest buildable example. The example is used by command `idf.py create-project`
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
+## Componentes utilizados
 
+- **ESP32**: Microcontrolador principal.
+- **Sensor DHT22**: Sensor digital de temperatura y humedad.
+- **Pantalla OLED SH1106**: Pantalla gráfica monocromática de 128x64 píxeles, conectada por I2C.
+- **Protocolo MQTT**: Para la transmisión de datos a un servidor/broker MQTT.
+- **TLS/SSL**: Seguridad en la comunicación MQTT mediante certificados digitales.
+- **LVGL**: (Opcional) Librería gráfica para interfaces de usuario en la pantalla OLED.
+- **ESP-IDF**: Framework oficial de Espressif para desarrollo en ESP32.
 
-
-## How to use example
-We encourage the users to use the example as a template for the new projects.
-A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
-
-## Example folder contents
-
-The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
-
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-files that provide set of directives and instructions describing the project's source files and targets
-(executable, library, or both). 
-
-Below is short explanation of remaining files in the project folder.
+## Estructura del proyecto
 
 ```
 ├── CMakeLists.txt
 ├── main
 │   ├── CMakeLists.txt
-│   └── main.c
-└── README.md                  This is the file you are currently reading
+│   ├── main.c
+│   ├── oled_display.c
+│   ├── oled_display.h
+│   ├── mqtt_app.c
+│   ├── mqtt_app.h
+│   ├── dht_app.c
+│   ├── dht_app.h
+│   └── ui/ (código generado para la interfaz gráfica, si se usa LVGL)
+└── README.md
 ```
-Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
-They are not used or needed when building with CMake and idf.py.
+
+## Descripción general
+
+- El **DHT22** se conecta a un pin GPIO y se lee periódicamente.
+- Los datos se muestran en la pantalla **OLED SH1106** usando I2C.
+- Los valores de temperatura y humedad se publican en tópicos MQTT usando una conexión segura (TLS).
+- El código está organizado en módulos para facilitar el mantenimiento y la extensión.
+
+## Notas
+
+- Para usar MQTT con TLS, asegúrate de configurar correctamente los certificados en el código y en el broker.
+- La pantalla SH1106 requiere una inicialización especial y el uso de una librería compatible (por ejemplo, `esp_lcd_panel_sh1106`).
+- El framework **ESP-IDF** permite una integración sencilla de todos estos componentes y protocolos.
+
+---
