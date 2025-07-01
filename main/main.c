@@ -14,6 +14,7 @@
 #define FORMAT_DATA "H:%.2f%% T:%.2fC"
 #define TEMPERATURE_TOPIC "/topic/temperature"
 #define HUMIDITY_TOPIC "/topic/humidity"
+extern volatile bool mqtt_restart_requested;
 
 void app_main(void)
 {
@@ -51,6 +52,14 @@ void app_main(void)
             esp_mqtt_client_publish(client, HUMIDITY_TOPIC, humidity_str, 0, 0, 0);
         }
         oled_draw_text(panel_handle, display_str);
+
+        if (mqtt_restart_requested)
+        {
+            mqtt_restart_requested = false;
+            esp_mqtt_client_stop(client);
+            esp_mqtt_client_destroy(client);
+            mqtt_app_start();
+        }
         sleep(5);
     }
 }

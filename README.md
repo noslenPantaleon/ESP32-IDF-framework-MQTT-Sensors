@@ -42,4 +42,14 @@ Este proyecto es un ejemplo de aplicación IoT usando el framework **ESP-IDF** d
 - La pantalla SH1106 requiere una inicialización especial y el uso de una librería compatible (por ejemplo, `esp_lcd_panel_sh1106`).
 - El framework **ESP-IDF** permite una integración sencilla de todos estos componentes y protocolos.
 
+## Ejemplo para agregar credenciales en archivo credentials.h
+
+#define PRIMARY_BROKER_URI "mqtts://111.22.331.175"
+#define PRIMARY_BROKER_PORT 8883
+#define BROKER_USER "IOT-jfjf"
+#define BROKER_PASSWORD "dsjiafkjg"
+
+#define FALLBACK_BROKER_URI "mqtt://broker.hivemq.com"
+#define FALLBACK_BROKER_PORT 1883
+
 ---
